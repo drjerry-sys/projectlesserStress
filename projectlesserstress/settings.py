@@ -153,6 +153,10 @@ SIMPLE_JWT = {
 }
 
 
+# Email
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -172,14 +176,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# CORS_ORIGIN_WHITELIST = [
-#     'http://127.0.0.1:3000',
-#     'http://127.0.0.1:8000',
-#     'https://localhost:3000',
-#     'http://localhost:3000'
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+]
 
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 # APPEND_SLASH=False
 
 
