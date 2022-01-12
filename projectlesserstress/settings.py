@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # my installed apps
     'Authentication',
+    'Spaces',
 
     # third party apps
     'rest_framework',
