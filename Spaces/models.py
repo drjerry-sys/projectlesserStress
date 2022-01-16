@@ -1,5 +1,6 @@
 from django.db import models
 from Authentication.models import MyUser
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 class Compound(models.Model):
@@ -9,11 +10,9 @@ class Compound(models.Model):
     )
     comp_name = models.CharField(max_length=150)
     comp_type = models.CharField(max_length=150, null=False, blank=False)
-    noOfTenantsPerBath = models.IntegerField(null=False)
-    noOfTenantsPerToilet = models.IntegerField(null=False)
-    mapCoordinate = models.IntegerField(null=True)
+    noOfRoomsPerBath = models.IntegerField(null=False)
+    noOfRoomsPerToilet = models.IntegerField(null=False)
     areaLocated = models.CharField(max_length=500)
-    distanceToSchoolGate = models.DecimalField(decimal_places=1, max_digits=6)
     timeOfTreckToGate = models.IntegerField()
     powerSupply = models.BooleanField()
     generator = models.BooleanField()
@@ -33,6 +32,7 @@ class Compound(models.Model):
     last_edited = models.DateTimeField(auto_now=True)
     latitude = models.DecimalField(decimal_places=8, max_digits=8)
     longitude = models.DecimalField(decimal_places=8, max_digits=8)
+    distanceToSchoolGate = models.DecimalField(decimal_places=1, max_digits=6)
     agent_id = models.ForeignKey(MyUser, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
@@ -47,6 +47,7 @@ class Room(models.Model):
     noOfTenantPermitted = models.IntegerField(null=True)
     noOfWindows = models.IntegerField(null=False)
     roomSize = models.DecimalField(decimal_places=3, max_digits=5)
+    roomAreaUnit = models.CharField(max_length=50)
     airCondition = models.BooleanField()
     kitchen = models.BooleanField()
     flatscreenTV = models.BooleanField()
@@ -58,8 +59,6 @@ class Room(models.Model):
     last_edited = models.DateTimeField(auto_now=True)
     compoundId = models.ForeignKey(Compound, unique=False, on_delete=models.CASCADE)
 
-class ImagesTb(models.Model):
-    pass
 
 class BookmarkTb(models.Model):
     userId = models.ForeignKey(MyUser, unique=False, on_delete=models.CASCADE)
@@ -69,5 +68,18 @@ class Inspection(models.Model):
     roomId = models.ForeignKey(Room, on_delete=models.CASCADE)
     userId = models.ForeignKey(MyUser, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = ('roomId', 'userId')
+    # class Meta:
+    #     unique_together = ('roomId', 'userId')
+def upload_to(instance, filename):
+    return f'compound/{filename}'
+
+def uploadroom_to(instance, filename):
+    return f'room/{filename}'
+
+class CompoundImages(models.Model):
+    compoundId = models.ForeignKey(Compound, on_delete=models.CASCADE)
+    image = models.ImageField(_('Image'), upload_to=upload_to, default='compound/default.jpg')
+
+class RoomImages(models.Model):
+    roomId = models.ForeignKey(Room, on_delete=models.CASCADE)
+    image = models.ImageField(_('Image'), upload_to=uploadroom_to, default='room/default.jpg')
