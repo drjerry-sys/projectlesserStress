@@ -24,7 +24,7 @@ class ResetCode(APIView):
 
     def post(self, request, code_or_reset=None):
         if code_or_reset == "reset":
-            user = MyUser.object.get(email=request.data['email'])
+            user = MyUser.objects.get(email=request.data['email'])
             codeB = VerificationCode.objects.get(userId=user.id, codeType="reset")
             if codeB.code == request.data['code']:
                 reg_serializer = CreateUserSerializer(user, data=request.data, partial=True)
@@ -38,7 +38,7 @@ class ResetCode(APIView):
         elif code_or_reset == "code":
             email = request.data["email"]
             try:
-                user = MyUser.object.get(email=email)
+                user = MyUser.objects.get(email=email)
             except: user = ''
             if user:
                 try:
