@@ -37,14 +37,13 @@ class Compound(models.Model):
     longitude = models.DecimalField(max_digits=8, decimal_places=4, default=32423.343)
     distanceToSchoolGate = models.DecimalField(max_digits=6, decimal_places=1, default=3233.4)
 
+    class Meta:
+        unique_together = ('comp_name', 'id')
+
     def __str__(self) -> str:
         return f'{self.comp_name} added'
 
 class Room(models.Model):
-    choices = (
-        ('S', 'single room'),
-        ('SC', 'self contained'),
-    )
     kitchen = models.BooleanField()
     airCondition = models.BooleanField()
     flatscreenTV = models.BooleanField()
