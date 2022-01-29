@@ -38,7 +38,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     start_date = models.DateField(default=timezone.now)
     about = models.TextField(_('about'), max_length=500, blank=True)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    email_verified = models.BooleanField(default=False)
 
     objects = CustomAccountManager()
 

@@ -1,12 +1,13 @@
-from django.core.checks import messages
-from Authentication.models import MyUser, VerificationCode
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from .serializers import CreateUserSerializer
 import random
+from rest_framework import status
+from django.core.checks import messages
 from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import CreateUserSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from Authentication.models import MyUser, VerificationCode
 
 class CreateUser(APIView):
     permission_classes = [AllowAny]
@@ -56,4 +57,15 @@ class ResetCode(APIView):
                     fail_silently=False,
                 )
                 return Response(status=status.HTTP_202_ACCEPTED)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class BlacklistTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data['refresh_token']
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)

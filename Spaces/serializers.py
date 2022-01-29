@@ -50,9 +50,9 @@ class CompoundSerializer(serializers.ModelSerializer):
 class CompImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompoundImages
-        fields = ('image',)
+        fields = ('comp_image', 'compoundId')
 
 class RoomImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomImages
-        fields = ('image',)
+        fields = ('room_image', 'roomId')

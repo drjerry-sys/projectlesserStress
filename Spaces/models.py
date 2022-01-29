@@ -23,12 +23,12 @@ class Compound(models.Model):
     check_out = models.TimeField(null=True)
     noOfRoomsPerBath = models.IntegerField()
     noOfRoomsPerToilet = models.IntegerField()
-    comp_name = models.CharField(max_length=150)
     ownerType = models.CharField(max_length=150)
     areaLocated = models.CharField(max_length=500)
     last_edited = models.DateTimeField(auto_now=True)
     timeOfTreckToGate = models.IntegerField(default=323)
     date_added = models.DateTimeField(auto_now_add=True)
+    comp_name = models.CharField(max_length=150, null=True)
     comp_type = models.CharField(max_length=150, blank=False)
     extraRules = models.TextField(max_length=1000, null=True)
     agentComment = models.CharField(max_length=1000, null=True)
@@ -80,7 +80,7 @@ def uploadroom_to(instance, filename):
     return f'room/{filename}'
 
 class CompoundImages(models.Model):
-    compoundId = models.ForeignKey(Compound, on_delete=models.CASCADE)
+    compoundId = models.ForeignKey(Compound, on_delete=models.CASCADE, null=True)
     comp_image = models.ImageField(_('Image'), upload_to=upload_to, default='compound/default.jpg')
 
 class RoomImages(models.Model):
