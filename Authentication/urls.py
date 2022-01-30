@@ -9,5 +9,5 @@ urlpatterns = [
     path('reset_password/<str:code_or_reset>', ResetCode.as_view(), name='reset_passord'),
     path('api/token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path('register/', CreateUser.as_view(), name='create_user'),
-    path('logout/', BlacklistTokenView.as_view(), name='blacklist')
+    path('logout/', BlacklistTokenView.as_view(), name='blacklist'),
 ]

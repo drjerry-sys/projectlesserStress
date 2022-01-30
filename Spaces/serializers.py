@@ -7,10 +7,7 @@ from Authentication.models import MyUser
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = (
-            'roomType', 'noOfTenantPermitted', 'noOfWindows', 'roomArea', 'airCondition', 'kitchen', 'flatscreenTV',
-            'room_yearlyPrice', 'discount', 'inspection_price', 'wardrobe', 'date_added', 'last_edited', 'compoundId'
-        )
+        fields = '__all__'
 
     # def create(self, validated_data):
     #     """for newly created compounds, compoundId is 0.1,
