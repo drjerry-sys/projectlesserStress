@@ -3,16 +3,23 @@ from Spaces.models import Compound, Room
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser, FileUploadParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer
 from .helperFunctions import helper, room_helper
 # Create your views here.
 
 class CompoundView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        my_compounds = Compound.objects.filter(agent=request.user.id)
+        serializer = CompoundSerializer(my_compounds, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
-        comp_serializer = CompoundSerializer(data=request.data)
+        val = request.data
+        val['agent'] = request.user.id
+        comp_serializer = CompoundSerializer(data=val)
         if comp_serializer.is_valid(raise_exception=True):
             new_comp = comp_serializer.save()
             if new_comp:

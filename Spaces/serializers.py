@@ -32,12 +32,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class CompoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Compound
-        fields = (
-            'comp_name', 'comp_type', 'noOfRoomsPerBath', 'noOfRoomsPerToilet', 'areaLocated', 'distanceToSchoolGate',
-            'longitude', 'latitude', 'last_edited', 'date_added', 'agentComment', 'extraRules', 'check_out', 'check_in',
-            'partying', 'children', 'animals', 'smoking', 'swimmingPool', 'washingMachine', 'garage', 'wellWater', 'borehole', 'generator',
-            'powerSupply', 'timeOfTreckToGate', 'agent'
-        )
+        fields = '__all__'
 
     # def create(self, validated_data):
     #     agentId = validated_data.pop('agent', None)

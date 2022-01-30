@@ -40,6 +40,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     email_verified = models.BooleanField(default=False)
+    is_agent = models.BooleanField(default=False)
 
     objects = CustomAccountManager()
 
