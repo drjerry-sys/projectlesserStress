@@ -3,7 +3,7 @@ This project is an api attributed to the lesserStressv2 app written with react.j
 
 ## Endpoints
 
-#Authentication
+**Authentication**
 
 -auth/api/token/refresh/ for refresh token
 
