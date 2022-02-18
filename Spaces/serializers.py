@@ -4,6 +4,17 @@ from rest_framework import serializers
 from .models import Compound, CompoundImages, Room, RoomImages
 from Authentication.models import MyUser
 
+
+class CompImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompoundImages
+        fields = ('comp_image', 'compoundId')
+
+class RoomImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomImages
+        fields = ('room_image', 'roomId')
+
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
@@ -38,13 +49,3 @@ class CompoundSerializer(serializers.ModelSerializer):
     #         instance.agent_id = agentId
     #     instance.save()
     #     return instance
-
-class CompImagesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CompoundImages
-        fields = ('comp_image', 'compoundId')
-
-class RoomImagesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoomImages
-        fields = ('room_image', 'roomId')

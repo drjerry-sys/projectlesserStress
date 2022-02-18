@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from Authentication.models import MyUser
 from django.utils.translation import gettext_lazy as _
@@ -79,9 +80,9 @@ def uploadroom_to(instance, filename):
     return f'room/{filename}'
 
 class CompoundImages(models.Model):
-    compoundId = models.ForeignKey(Compound, on_delete=models.CASCADE, null=True)
+    compoundId = models.ForeignKey(Compound, on_delete=models.CASCADE, related_name='compound_images', null=True)
     comp_image = models.ImageField(_('Image'), upload_to=upload_to, default='compound/default.jpg')
 
 class RoomImages(models.Model):
-    roomId = models.ForeignKey(Room, on_delete=models.CASCADE)
+    roomId = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_images')
     room_image = models.ImageField(_('Image'), upload_to=uploadroom_to, default='room/default.jpg')

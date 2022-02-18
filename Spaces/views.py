@@ -1,6 +1,6 @@
-import time
+import time, json
 from django.http import JsonResponse
-from Spaces.models import Compound, Room
+from Spaces.models import Compound, Room, RoomImages
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -96,6 +96,10 @@ class CompoundImagesViews(APIView):
 
 def homeRoomsViews(request):
     if request.method == 'GET':
-        data = Room.objects.all()[:4]
-        serializer = RoomSerializer(data, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        # data = RoomImages.objects.select_related('roomId').all()
+        data = []
+        rooms = Room.objects.all().values()[:4]
+        for room in rooms:
+            data.append({**room,"images": RoomImages.objects.filter(roomId = room['id'])})
+        serializer = json.dumps(data, default=str)
+        return Response(serializer, safe=False)
