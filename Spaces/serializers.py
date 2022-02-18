@@ -11,9 +11,15 @@ class CompImagesSerializer(serializers.ModelSerializer):
         fields = ('comp_image', 'compoundId')
 
 class RoomImagesSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField('get_image_url')
     class Meta:
         model = RoomImages
-        fields = ('room_image', 'roomId')
+        fields = ('image_url',)
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        print(obj)
+        return request.build_absolute_uri(obj.room_image.url)
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:

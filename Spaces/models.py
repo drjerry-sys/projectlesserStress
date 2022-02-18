@@ -61,7 +61,7 @@ class Room(models.Model):
     roomArea = models.DecimalField(decimal_places=3, max_digits=10, null=True)
     room_yearlyPrice = models.DecimalField(decimal_places=3, max_digits=10, null=True)
     inspection_price = models.DecimalField(decimal_places=3, max_digits=10, null=True)
-    compoundId = models.ForeignKey(Compound, unique=False, on_delete=models.CASCADE)
+    compoundId = models.ForeignKey(Compound, unique=False, on_delete=models.CASCADE, null=True)
     
 class BookmarkTb(models.Model):
     roomId = models.ForeignKey(Room, unique=False, on_delete=models.CASCADE)

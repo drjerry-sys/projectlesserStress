@@ -1,12 +1,17 @@
+from email.mime import image
+from multiprocessing import context
 import time, json
-from django.http import JsonResponse
-from Spaces.models import Compound, Room, RoomImages
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
+from .helperFunctions import helper, room_helper
+from Spaces.models import Compound, Room, RoomImages
+from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer
-from .helperFunctions import helper, room_helper
 # Create your views here.
 
 class CompoundView(APIView):
@@ -94,12 +99,21 @@ class CompoundImagesViews(APIView):
             return Response(arr, status=status.HTTP_200_OK)
         return Response(arr, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(('GET',))
+@renderer_classes((JSONRenderer, ))
 def homeRoomsViews(request):
     if request.method == 'GET':
         # data = RoomImages.objects.select_related('roomId').all()
         data = []
         rooms = Room.objects.all().values()[:4]
+        # queryset = RoomImages.objects.all()
+        # serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
+        # print({'serializer': serializer.data})
         for room in rooms:
-            data.append({**room,"images": RoomImages.objects.filter(roomId = room['id'])})
-        serializer = json.dumps(data, default=str)
-        return Response(serializer, safe=False)
+            queryset = RoomImages.objects.filter(roomId = room['id'])
+            rm_serializer = RoomSerializer(room)
+            serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
+            data.append({f"data{room['id']}": rm_serializer.data,"images": serializer.data})
+        # serializer = json.dumps(data, cls=DjangoJSONEncoder)
+        return Response(data)
