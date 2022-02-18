@@ -104,16 +104,13 @@ class CompoundImagesViews(APIView):
 @renderer_classes((JSONRenderer, ))
 def homeRoomsViews(request):
     if request.method == 'GET':
-        # data = RoomImages.objects.select_related('roomId').all()
         data = []
         rooms = Room.objects.all().values()[:4]
-        # queryset = RoomImages.objects.all()
-        # serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
-        # print({'serializer': serializer.data})
+        # this code serializes the room images and room data and appends it to the data variable
+        # which is then pushed to the front-end
         for room in rooms:
             queryset = RoomImages.objects.filter(roomId = room['id'])
             rm_serializer = RoomSerializer(room)
             serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
             data.append({f"data{room['id']}": rm_serializer.data,"images": serializer.data})
-        # serializer = json.dumps(data, cls=DjangoJSONEncoder)
         return Response(data)
