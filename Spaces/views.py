@@ -1,6 +1,7 @@
 from email.mime import image
 from multiprocessing import context
 import time, json
+from Authentication.models import MyUser
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
@@ -102,15 +103,17 @@ class CompoundImagesViews(APIView):
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer, ))
-def homeRoomsViews(request):
+def homeDataViews(request):
     if request.method == 'GET':
-        data = []
-        rooms = Room.objects.all().values()[:4]
+        user_satisfied = MyUser.objects.filter(once_satisfied=False).count()
+        freeSpace = Room.objects.filter(taken=False).count()
+        data = {'spaces': [], 'myName': request.user.first_name if request.user.is_authenticated else '', 'user_satisfied': user_satisfied, 'freeSpace': freeSpace}
+        rooms = Room.objects.all().values()[:6]
         # this code serializes the room images and room data and appends it to the data variable
         # which is then pushed to the front-end
         for room in rooms:
             queryset = RoomImages.objects.filter(roomId = room['id'])
             rm_serializer = RoomSerializer(room)
             serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
-            data.append({f"data{room['id']}": rm_serializer.data,"images": serializer.data})
+            data['spaces'].append({"data": rm_serializer.data,"images": serializer.data})
         return Response(data)

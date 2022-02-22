@@ -1,4 +1,3 @@
-from pyexpat import model
 from django.db import models
 from Authentication.models import MyUser
 from django.utils.translation import gettext_lazy as _
@@ -31,6 +30,7 @@ class Compound(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     comp_name = models.CharField(max_length=150, null=True)
     comp_type = models.CharField(max_length=150, blank=False)
+    address = models.CharField(max_length=150, blank=False, null=True)
     extraRules = models.TextField(max_length=1000, null=True)
     agentComment = models.CharField(max_length=1000, null=True)
     agent = models.ForeignKey(MyUser, on_delete=models.CASCADE)
@@ -57,6 +57,7 @@ class Room(models.Model):
     last_edited = models.DateTimeField(auto_now=True)
     noOfTenantPermitted = models.IntegerField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    taken = models.CharField(max_length=50, default=False)
     discount = models.DecimalField(decimal_places=3, max_digits=10, null=True)
     roomArea = models.DecimalField(decimal_places=3, max_digits=10, null=True)
     room_yearlyPrice = models.DecimalField(decimal_places=3, max_digits=10, null=True)
