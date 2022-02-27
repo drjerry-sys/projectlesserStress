@@ -1,6 +1,7 @@
 from email.mime import image
 from multiprocessing import context
-import time, json
+import time
+from django.db import connection
 from Authentication.models import MyUser
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
@@ -9,11 +10,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from .helperFunctions import helper, room_helper
-from Spaces.models import Compound, Room, RoomImages
+from Spaces.models import Compound, CompoundImages, Room, RoomImages
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer
 # Create your views here.
+
+
+cursor = connection.cursor()
 
 class CompoundView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -117,3 +121,27 @@ def homeDataViews(request):
             serializer = RoomImagesSerializer(queryset, context={'request': request}, many=True)
             data['spaces'].append({"data": rm_serializer.data,"images": serializer.data})
         return Response(data)
+
+check = []
+@api_view(('GET',))
+def searchResults(request, area, price):
+    data = []
+    if request.method == "GET":
+        start, end = price.split("-")
+        start, end = int(start[1:].strip().replace(',', '').replace('₦', '')), int(end[1:].strip().replace(',', '').replace('₦', ''))
+        search_result = Room.objects.select_related("compoundId").filter(room_yearlyPrice__range=(start, end))
+        # search_result = Room.objects.all().select_related("compoundId")
+        # print({'search_result': search_result.values()})
+        # try:
+        for room in search_result:
+            if room.compoundId in check:
+                continue
+            queryset = Compound.objects.filter(id=room.compoundId)
+            images = CompoundImages.objects.filter(compoundId=room.compoundId)
+            comp_serializers = CompoundSerializer(queryset, many=True)
+            img_serializers = CompImagesSerializer(images, many=True)
+            data.append({'data': comp_serializers, 'images': img_serializers})
+            check.append(room.compoundId)
+        serializer = RoomSerializer(search_result, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
