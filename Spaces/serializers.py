@@ -21,7 +21,21 @@ class RoomImagesSerializer(serializers.ModelSerializer):
         print(obj)
         return request.build_absolute_uri(obj.room_image.url)
 
+class CompoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Compound
+        fields = '__all__'
+
+    # def create(self, validated_data):
+    #     agentId = validated_data.pop('agent', None)
+    #     instance = self.Meta.model(**validated_data)
+    #     if agentId is not None:
+    #         instance.agent_id = agentId
+    #     instance.save()
+    #     return instance
+
 class RoomSerializer(serializers.ModelSerializer):
+    belong_to = CompoundSerializer(read_only=True, many=True)
     class Meta:
         model = Room
         fields = '__all__'
@@ -40,18 +54,5 @@ class RoomSerializer(serializers.ModelSerializer):
     #         else:
     #             belong_to = compoundId
     #         instance.compoundId = belong_to
-    #     instance.save()
-    #     return instance
-
-class CompoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Compound
-        fields = '__all__'
-
-    # def create(self, validated_data):
-    #     agentId = validated_data.pop('agent', None)
-    #     instance = self.Meta.model(**validated_data)
-    #     if agentId is not None:
-    #         instance.agent_id = agentId
     #     instance.save()
     #     return instance

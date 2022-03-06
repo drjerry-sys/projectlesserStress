@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 
     # my installed apps
     'Authentication',
@@ -90,10 +91,12 @@ WSGI_APPLICATION = 'projectlesserstress.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': "projectlesserstress",
-        'USER': "root",
-        'PASSWORD': ""
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "projectlesserstressv2",
+        'USER': "jerry",
+        'PASSWORD': "jerry",
+        "HOST": 'localhost',
+        'PORT': '',
     }
 }
 

@@ -1,6 +1,6 @@
 from email.mime import image
 from multiprocessing import context
-import time
+import time, json
 from django.db import connection
 from Authentication.models import MyUser
 from rest_framework.decorators import api_view, renderer_classes
@@ -14,7 +14,7 @@ from Spaces.models import Compound, CompoundImages, Room, RoomImages
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer
-# Create your views here.
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
 
 cursor = connection.cursor()
@@ -109,8 +109,8 @@ class CompoundImagesViews(APIView):
 @renderer_classes((JSONRenderer, ))
 def homeDataViews(request):
     if request.method == 'GET':
-        user_satisfied = MyUser.objects.filter(once_satisfied=False).count()
-        freeSpace = Room.objects.filter(taken=False).count()
+        user_satisfied = MyUser.objects.filter(once_satisfied=True).count()
+        freeSpace = Room.objects.filter(taken=0).count()
         data = {'spaces': [], 'myName': request.user.first_name if request.user.is_authenticated else '', 'user_satisfied': user_satisfied, 'freeSpace': freeSpace}
         rooms = Room.objects.all().values()[:6]
         # this code serializes the room images and room data and appends it to the data variable
@@ -122,26 +122,33 @@ def homeDataViews(request):
             data['spaces'].append({"data": rm_serializer.data,"images": serializer.data})
         return Response(data)
 
-check = []
+def ValuesQuerySetToDict(vqs):
+    return [item for item in vqs]
+
 @api_view(('GET',))
 def searchResults(request, area, price):
     data = []
+    # print({'area': area, 'price': price})
     if request.method == "GET":
-        start, end = price.split("-")
-        start, end = int(start[1:].strip().replace(',', '').replace('₦', '')), int(end[1:].strip().replace(',', '').replace('₦', ''))
-        search_result = Room.objects.select_related("compoundId").filter(room_yearlyPrice__range=(start, end))
-        # search_result = Room.objects.all().select_related("compoundId")
-        # print({'search_result': search_result.values()})
-        # try:
-        for room in search_result:
-            if room.compoundId in check:
-                continue
-            queryset = Compound.objects.filter(id=room.compoundId)
-            images = CompoundImages.objects.filter(compoundId=room.compoundId)
-            comp_serializers = CompoundSerializer(queryset, many=True)
-            img_serializers = CompImagesSerializer(images, many=True)
-            data.append({'data': comp_serializers, 'images': img_serializers})
-            check.append(room.compoundId)
+        vector = SearchVector('compoundId__areaLocated', weight='A') + SearchVector('roomType', weight='B')
+        query = SearchQuery(area)
+        search_result = Room.objects.annotate(rank=SearchRank(vector, query)).select_related('compoundId').values('compoundId__comp_name', 'compoundId__areaLocated'
+            , 'compoundId__latitude', 'kitchen', 'airCondition', 'flatscreenTV', 'wardrobe', 'roomType'
+            , 'cleaner', 'noOfWindows', 'bathtube', 'roomAreaUnit', 'last_edited', 'noOfTenantPermitted'
+            , 'date_added', 'taken', 'discount', 'roomArea', 'room_yearlyPrice', 'inspection_price')
+        
+        if price != "above 400,000":
+            start, end = price.split("-")
+            start, end = int(start[1:].strip().replace(',', '').replace('₦', '')), int(end[1:].strip().replace(',', '').replace('₦', ''))
+            start, end = 10, 100000000
+            search_result = search_result.filter(room_yearlyPrice__range=(start, end)).order_by('-rank')
+        else:
+            search_result = search_result.filter(room_yearlyPrice__gte=400000).order_by('-rank')
+        # search_result = Room.objects.select_related("compoundId").filter(room_yearlyPrice__range=(start, end), compoundId__comp_type__icontain='duplex')
+        # for room in search_result:
+        #     images = CompoundImages.objects.filter(compoundId=room.compoundId)
+        #     img_serializers = CompImagesSerializer(images, many=True)
+        #     data.append({'data': comp_serializers, 'images': img_serializers})
+        # print(search_result)
         serializer = RoomSerializer(search_result, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        return Response(serializer.data)
