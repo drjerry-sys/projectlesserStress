@@ -1,6 +1,8 @@
 from email.mime import image
+from django.db.models import OuterRef, Subquery
 from multiprocessing import context
 import time, json
+from django.core import serializers
 from django.db import connection
 from Authentication.models import MyUser
 from rest_framework.decorators import api_view, renderer_classes
@@ -13,7 +15,7 @@ from .helperFunctions import helper, room_helper
 from Spaces.models import Compound, CompoundImages, Room, RoomImages
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer
+from .serializers import CompImagesSerializer, CompoundSerializer, RoomImagesSerializer, RoomSerializer, SearchSerializer
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
 
@@ -58,7 +60,6 @@ class RoomImagesViews(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, format=None):
-        print('this is user id', request.user.id)
         agent = request.user.id
         if request.data['compoundId'] == '0.1':
             compid = Compound.objects.filter(agent=int(agent)).order_by('-id')[0].id
@@ -104,7 +105,6 @@ class CompoundImagesViews(APIView):
             return Response(arr, status=status.HTTP_200_OK)
         return Response(arr, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(('GET',))
 @renderer_classes((JSONRenderer, ))
 def homeDataViews(request):
@@ -132,15 +132,16 @@ def searchResults(request, area, price):
     if request.method == "GET":
         vector = SearchVector('compoundId__areaLocated', weight='A') + SearchVector('roomType', weight='B')
         query = SearchQuery(area)
-        search_result = Room.objects.annotate(rank=SearchRank(vector, query)).select_related('compoundId').values('compoundId__comp_name', 'compoundId__areaLocated'
-            , 'compoundId__latitude', 'kitchen', 'airCondition', 'flatscreenTV', 'wardrobe', 'roomType'
-            , 'cleaner', 'noOfWindows', 'bathtube', 'roomAreaUnit', 'last_edited', 'noOfTenantPermitted'
+        images = CompoundImages.objects.filter(compoundId=OuterRef('compoundId'))
+        search_result = Room.objects.annotate(rank=SearchRank(vector, query), image_url=images.values('comp_image')).select_related('compoundId').values('compoundId__comp_name', 'compoundId__areaLocated'
+            , 'compoundId__longitude', 'compoundId__latitude', 'kitchen', 'airCondition', 'flatscreenTV', 'wardrobe', 'roomType'
+            , 'cleaner', 'noOfWindows', 'bathtube', 'roomAreaUnit', 'last_edited', 'noOfTenantPermitted', 'image_url'
             , 'date_added', 'taken', 'discount', 'roomArea', 'room_yearlyPrice', 'inspection_price')
         
         if price != "above 400,000":
             start, end = price.split("-")
             start, end = int(start[1:].strip().replace(',', '').replace('₦', '')), int(end[1:].strip().replace(',', '').replace('₦', ''))
-            start, end = 10, 100000000
+            # start, end = 10, 100000000
             search_result = search_result.filter(room_yearlyPrice__range=(start, end)).order_by('-rank')
         else:
             search_result = search_result.filter(room_yearlyPrice__gte=400000).order_by('-rank')
@@ -150,5 +151,6 @@ def searchResults(request, area, price):
         #     img_serializers = CompImagesSerializer(images, many=True)
         #     data.append({'data': comp_serializers, 'images': img_serializers})
         # print(search_result)
-        serializer = RoomSerializer(search_result, many=True)
+        # res = json.dumps(ValuesQuerySetToDict(search_result), cls=DjangoJSONEncoder)
+        serializer = SearchSerializer(search_result, many=True)
         return Response(serializer.data)

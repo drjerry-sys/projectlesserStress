@@ -6,9 +6,14 @@ from Authentication.models import MyUser
 
 
 class CompImagesSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField('get_image_url')
     class Meta:
         model = CompoundImages
-        fields = ('comp_image', 'compoundId')
+        fields = ('image_url', 'compoundId')
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.room_image.url)
 
 class RoomImagesSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField('get_image_url')
@@ -18,7 +23,6 @@ class RoomImagesSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         request = self.context.get("request")
-        print(obj)
         return request.build_absolute_uri(obj.room_image.url)
 
 class CompoundSerializer(serializers.ModelSerializer):
@@ -56,3 +60,28 @@ class RoomSerializer(serializers.ModelSerializer):
     #         instance.compoundId = belong_to
     #     instance.save()
     #     return instance
+
+class SearchSerializer(serializers.Serializer):
+    kitchen = serializers.BooleanField()
+    airCondition = serializers.BooleanField()
+    flatscreenTV = serializers.BooleanField()
+    wardrobe = serializers.BooleanField()
+    roomType = serializers.CharField(max_length=50)
+    cleaner = serializers.BooleanField(default=False)
+    noOfWindows = serializers.IntegerField()
+    bathtube = serializers.BooleanField()
+    roomAreaUnit = serializers.CharField(max_length=50)
+    last_edited = serializers.DateTimeField()
+    noOfTenantPermitted = serializers.IntegerField()
+    date_added = serializers.DateTimeField()
+    taken = serializers.CharField(max_length=50, default=False)
+    discount = serializers.DecimalField(decimal_places=3, max_digits=10,)
+    roomArea = serializers.DecimalField(decimal_places=3, max_digits=10)
+    room_yearlyPrice = serializers.DecimalField(decimal_places=7, max_digits=50)
+    inspection_price = serializers.DecimalField(decimal_places=7, max_digits=50)
+    # compoundId = serializers.IntegerField()
+    image_url = serializers.ImageField()
+    compoundId__comp_name = serializers.CharField(max_length=150)
+    compoundId__latitude = serializers.DecimalField(max_digits=8, decimal_places=4)
+    compoundId__longitude = serializers.DecimalField(max_digits=8, decimal_places=4)
+    compoundId__areaLocated = serializers.CharField(max_length=500)
