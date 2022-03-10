@@ -10,5 +10,5 @@ urlpatterns = [
     path('compound/', CompoundView.as_view(), name='compound'),
     path('home-rooms/', homeDataViews, name='home_rooms'),
     path('room/', RoomView.as_view(), name='room'),
-    path('all-searches/<str:area>/<str:price>/', searchResults, name='room'),
+    path('all-searches/<str:area>/<str:price>/<int:page_number>/', searchResults, name='room'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

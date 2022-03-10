@@ -1,7 +1,9 @@
 from email.mime import image
+from re import search
 from django.db.models import OuterRef, Subquery
 from multiprocessing import context
 import time, json
+from django.core.paginator import Paginator
 from django.core import serializers
 from django.db import connection
 from Authentication.models import MyUser
@@ -126,14 +128,14 @@ def ValuesQuerySetToDict(vqs):
     return [item for item in vqs]
 
 @api_view(('GET',))
-def searchResults(request, area, price):
+def searchResults(request, area, price, page_number=None):
     data = []
     # print({'area': area, 'price': price})
     if request.method == "GET":
         vector = SearchVector('compoundId__areaLocated', weight='A') + SearchVector('roomType', weight='B')
         query = SearchQuery(area)
         images = CompoundImages.objects.filter(compoundId=OuterRef('compoundId'))
-        search_result = Room.objects.annotate(rank=SearchRank(vector, query), image_url=images.values('comp_image')).select_related('compoundId').values('compoundId__comp_name', 'compoundId__areaLocated'
+        search_result = Room.objects.annotate(rank=SearchRank(vector, query), image_url=Subquery(images.values('comp_image'))).select_related('compoundId').values('compoundId__comp_name', 'compoundId__areaLocated'
             , 'compoundId__longitude', 'compoundId__latitude', 'kitchen', 'airCondition', 'flatscreenTV', 'wardrobe', 'roomType'
             , 'cleaner', 'noOfWindows', 'bathtube', 'roomAreaUnit', 'last_edited', 'noOfTenantPermitted', 'image_url'
             , 'date_added', 'taken', 'discount', 'roomArea', 'room_yearlyPrice', 'inspection_price')
@@ -152,5 +154,8 @@ def searchResults(request, area, price):
         #     data.append({'data': comp_serializers, 'images': img_serializers})
         # print(search_result)
         # res = json.dumps(ValuesQuerySetToDict(search_result), cls=DjangoJSONEncoder)
-        serializer = SearchSerializer(search_result, many=True)
-        return Response(serializer.data)
+        paginated = Paginator(search_result, 20)
+        all_res = paginated.get_page(page_number).object_list
+        serializer = SearchSerializer(all_res, many=True)
+        paginated_results = {"search_results": serializer.data, "no_of_pages": paginated.num_pages, "total_search":search_result.count()}
+        return Response(paginated_results)
